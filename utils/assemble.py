@@ -1,5 +1,8 @@
 from entities.labelEntity import Label
 import xmindparser  # xmind解析器
+import jsonpath
+
+from utils import exchange
 
 
 def stick_label_and_update(label_collection, material, collection):
@@ -37,8 +40,9 @@ def parse_xmind(x: str):
     }
     file_path = x
     content = xmindparser.xmind_to_dict(file_path)
-    print(content)
+    # print(content)
     data = content[0]['topic']
+    print(data)
     res = get_course_from_xmind(data)
     return res
 
@@ -62,13 +66,48 @@ def course_label(material, label_of_path):
             course_label(item, label_of_path)
 
 
-if __name__ == '__main__':
-    from modules.db import MyDb
+def parse_xmind_next(xmind_path: str):
+    """
+    将xmind解析成next链
+    :return: next 元组列表
+    """
+    xmindparser.config = {
+        'showTopicId': True,  # 是否展示主题ID
+        'hideEmptyValue': True  # 是否隐藏空值
+    }
+    file_path = xmind_path
+    content = xmindparser.xmind_to_dict(file_path)
 
-    db = MyDb()
-    db.connect()
-    collection = db.client.Knowledge.files
-    x = '/Users/pmzz/Documents/茜总框架/数据分析体系.xmind'
-    print([i for i in collection.find()])
-    res = parse_xmind(x)
-    print(res)
+    data = content[0]['topic']
+    all_last = jsonpath.jsonpath(data, '$..topics[?(!@.topics)]')
+    all_last_name = [i['title'] for i in all_last]
+    pairs = exchange.w2(all_last_name)
+    return pairs, all_last_name
+
+
+def judge_all_type(material: list, ins):
+    """
+    判断列表中的元素是否是同一输入的类型
+    :param material: 需要判断的列表
+    :param ins: 用于判断类型的对象
+    :return:
+    """
+    flag = True
+    for i in material:
+        if not isinstance(i.type(ins)):
+            flag = False
+    return flag
+
+
+if __name__ == '__main__':
+    # from modules.db import MyDb
+    #
+    # db = MyDb()
+    # db.connect()
+    # collection = db.client.Knowledge.files
+    # x = '/Users/pmzz/Documents/茜总框架/数据分析体系.xmind'
+    # print([i for i in collection.find()])
+    # res = parse_xmind(x)
+    # print(res)
+    x = parse_xmind_next('测试用例.xmind')
+    print(exchange.w2(x))

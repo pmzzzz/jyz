@@ -28,6 +28,19 @@ def add_label(id_, k, v):
     db.client.Knowledge.files.update_one({'_id': id_}, {'$push': {'labels': {'type': k, 'value': v.split(',')}}})
 
 
+def add_label_by_name(name, k, v):
+    """
+    向指定file添加一个标签
+    :param id_:
+    :param k: 标签类型
+    :param v: 标签值，以逗号隔开
+    :return:
+    """
+    db = MyDb()
+    db.connect()
+    db.client.Knowledge.files.update_one({'name': name}, {'$push': {'labels': {'type': k, 'value': v.split(',')}}})
+
+
 def add_next(id_, v):
     """
     添加next标签
@@ -55,8 +68,14 @@ def push_file_label_by_name(name, type_, value):
     """
     db = MyDb()
     db.connect()
-    db.client.Knowledge.files.update_one({'$and': [{'name': name}, {'labels.type': type_}]},
-                                         {'$push': {'labels.$.value': value}})
+    x = db.client.Knowledge.files.find_one({'$and': [{'name': name}, {'labels.type': type_}]})
+    print('scssds', x)
+    if x:
+        db.client.Knowledge.files.update_one({'$and': [{'name': name}, {'labels.type': type_}]},
+                                             {'$push': {'labels.$.value': value}})
+    else:
+        print('已创建新的标签{}、{}、{}'.format(name, type_, value))
+        add_label_by_name(name, type_, value)
     return True
 
 
@@ -113,6 +132,22 @@ def __all_file() -> list:
     return [i for i in files]
 
 
+def __all_file_id() -> list:
+    """
+    查询所有文件
+    :return:
+    """
+    db = MyDb()
+    db.connect()
+    files = db.client.Knowledge.files.find({})
+    return [i['_id'] for i in files]
+
+
+def __all_file_name():
+    files = __all_file()
+    return [i['name'] for i in files]
+
+
 def get_file_by_id(id_):
     db = MyDb()
     db.connect()
@@ -125,6 +160,21 @@ def search_file_by_label(value):
     vs = [i for i in value.split(',')]
     x = [i for i in db.client.Knowledge.files.find({'labels': {'$elemMatch': {'value': {'$in': vs}}}})]
     return x
+
+
+def search_file_by_label_type(type_, value):
+    db = MyDb()
+    db.connect()
+    vs = [i for i in value.split(',')]
+    y = db.client.Knowledge.files.find({'labels.type': type_})
+    print(y)
+    x = [i for i in y]
+    res = []
+    for i in x:
+        for j in i['labels']:
+            if j['type'] == type_ and value in j['value']:
+                res.append(i)
+    return res
 
 
 def get_next(id_):
@@ -151,10 +201,29 @@ def get_next(id_):
 
 
 if __name__ == '__main__':
-    x = search_file_by_label('python')
-    for i in x:
-        print(i)
+    # x = search_file_by_label('python')
+    # for i in x:
+    #     print(i)
+    #
+    # # add_label('F059322','next','F041076,F062153')
+    # print(get_next('F059322'))
+    # # print(get_file_by_id('F059322'))
+    # print(__all_file_id())
+    # for i in __all_file():
+    #     print(i)
+    # # # print(__all_file_name())
+    # for i in search_file_by_label_type('领域', '电商'):
+    #     print(i)
+    a = {"name": 'a123', 'next': ['a124']}
+    b = {"name": 'a124', 'next': ['a125']}
+    c = {"name": 'a125', 'next': ['a126']}
+    d = {"name": 'a126', 'next': ['a127']}
+    e = {"name": 'a127', 'next': ['a128']}
+    test_data = [a, c, d, e, b]
 
-    # add_label('F059322','next','F041076,F062153')
-    print(get_next('F059322'))
-    # print(get_file_by_id('F059322'))
+    print(test_data)
+    # import jsonpath
+
+    # x = jsonpath.jsonpath(test_data[0], '$..next')
+    # print(x)
+

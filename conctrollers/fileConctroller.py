@@ -6,9 +6,11 @@ from flask import (
 from pymongo.errors import DuplicateKeyError
 from werkzeug.utils import secure_filename
 
+from fileModule import push_file_label_by_name, __all_file_name
 from labelEntity import Label
 from modules.db import MyDb
 from entities.fileEntity import File
+from utils import assemble
 
 bp = Blueprint('file', __name__, url_prefix='/file')
 bp.config = {'UPLOAD_FOLDER': 'upload/'}
@@ -68,3 +70,29 @@ def add_label(name):
     db.connect()
     db.client.Knowledge.files.update({'name': name}, {'$push': {'labels': label.show()}})
     return 'x'
+
+
+@bp.route('/add_next_from_xmind', methods=['POST', 'GET'])
+def add_next_from_xmind():
+    fp = None
+    try:
+        f = request.files['file']
+        fp = './temp/' + str(int(time.time())) + '.' + f.filename.split('.')[-1]
+        f.save(fp)
+        pairs, all_last_name = assemble.parse_xmind_next(fp)
+        # 验证是否全部存在
+        notin = []
+        for i in all_last_name:
+            if i not in __all_file_name():
+                notin.append(i)
+        if not notin:
+            for i in pairs:
+                push_file_label_by_name(i[0], 'next', i[1])
+        else:
+            return {'msg': "错误", 'notin': notin}
+    except Exception as e:
+        return {"msg": 'error', 'excption': str(e)}
+    finally:
+        if fp is not None:
+            os.remove(fp)
+    return {'msg': 'success', 'pairs': pairs}
