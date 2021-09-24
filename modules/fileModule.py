@@ -1,8 +1,14 @@
+import random
+
+import jsonpath
+
 from db import MyDb
 from entities.fileEntity import File
 
-
 # 添加
+from utils.exchange import prefix
+
+
 def add_file(file: File):
     """
     插入新的file
@@ -12,6 +18,15 @@ def add_file(file: File):
     db = MyDb()
     db.connect()
     db.client.Knowledg.files.insert_one(file.show())
+
+
+def add_file_name_path(name, url):
+    _id = prefix(6, random.randint(1, 99999), 'F')
+    data = {"_id": _id,
+            'name': name,
+            'url': url,
+            'labels': []
+            }
 
 
 # 修改
@@ -89,8 +104,13 @@ def push_file_label_by_id(id_, type_, value):
     """
     db = MyDb()
     db.connect()
-    db.client.Knowledge.files.update_one({'$and': [{'_id': id_}, {'labels.type': type_}]},
-                                         {'$push': {'labels.$.value': value}})
+    y = db.client.Knowledge.files.find_one({'$and': [{'_id': id_}, {'labels.type': type_}]})
+    if y:
+        db.client.Knowledge.files.update_one({'$and': [{'_id': id_}, {'labels.type': type_}]},
+                                             {'$push': {'labels.$.value': value}})
+    else:
+        print('已创建新的标签{}、{}、{}'.format(id_, type_, value))
+        add_label_by_name(id_, type_, value)
     return True
 
 
@@ -200,6 +220,13 @@ def get_next(id_):
         return '文件不存在'
 
 
+# 删除
+def delete_file(name):
+    db = MyDb()
+    db.connect()
+    db.client.Knowledge.files.remove({'name': name})
+
+
 if __name__ == '__main__':
     # x = search_file_by_label('python')
     # for i in x:
@@ -209,22 +236,21 @@ if __name__ == '__main__':
     # print(get_next('F059322'))
     # # print(get_file_by_id('F059322'))
     # print(__all_file_id())
-    # for i in __all_file():
-    #     print(i)
+    for i in __all_file():
+        print(i)
     # # # print(__all_file_name())
-    # for i in search_file_by_label_type('领域', '电商'):
+    # for i in search_file_by_label_type('能力', '通识知识与技能'):
     #     print(i)
+    #     print(jsonpath.jsonpath(i, '$..labels[type=next]'))
     a = {"name": 'a123', 'next': ['a124']}
     b = {"name": 'a124', 'next': ['a125']}
-    c = {"name": 'a125', 'next': ['a126']}
+    c = {"name": 'a125', 'next': ['a126', 'a127']}
     d = {"name": 'a126', 'next': ['a127']}
     e = {"name": 'a127', 'next': ['a128']}
     test_data = [a, c, d, e, b]
-
-    print(test_data)
     # import jsonpath
 
     # x = jsonpath.jsonpath(test_data[0], '$..next')
     # print(x)
-
-
+    for i in __all_file():
+        print(i)

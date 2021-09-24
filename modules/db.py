@@ -15,6 +15,10 @@ class MyDb:
         x = self.client.Knowledge.files.insert_one(file.show())
         return x
 
+    def add_file1(self, file: File):
+        x = self.client.Knowledge.files.insert_one(file.show1())
+        return x
+
     def save_file(self, file: File):
         x = self.client.Knowledge.files.save(file.show())
         return x

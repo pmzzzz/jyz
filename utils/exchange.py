@@ -1,3 +1,7 @@
+import pandas as pd
+import numpy as np
+
+
 def xxx(l, i):
     """
     从l中取出i传入的区间 例如[1,2,3],[0,1]---->[1]
@@ -48,3 +52,22 @@ def prefix(max_len, number, pre):
     str_len = len(str(number))
     if max_len > str_len:
         return pre + '0' * (max_len - str_len) + str(number)
+
+
+def parse_xlsx_get_label(fp):
+    x = pd.read_excel(fp)
+    for i in range(len(x)):
+        if x.iloc[i, 0] is np.nan:
+            x.iloc[i, :2] = x.iloc[i - 1, :2]
+    return x.iloc[:, [0, 2, 3]]
+
+
+def parse_xlsx_get_name_path(fp):
+    x = pd.read_excel(fp)
+    x = x.dropna()
+    return x.iloc[:, :2]
+
+if __name__ == '__main__':
+    x = parse_xlsx_get_label('/Users/pmzz/Jiangke/python/mongoKnowledge/工作簿1.xlsx')
+    y = parse_xlsx_get_name_path('/Users/pmzz/Jiangke/python/mongoKnowledge/工作簿1.xlsx')
+    print(x)

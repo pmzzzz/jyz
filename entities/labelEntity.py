@@ -12,7 +12,7 @@ class Label:
         if self._id == "":
             self._id = prefix(6, random.randint(1, 99999), 'L')
         data = {
-            '_id': self._id,
+            # '_id': self._id,
             'type': self.k,
             'value': self.v
         }

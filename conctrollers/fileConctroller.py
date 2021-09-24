@@ -6,11 +6,13 @@ from flask import (
 from pymongo.errors import DuplicateKeyError
 from werkzeug.utils import secure_filename
 
-from fileModule import push_file_label_by_name, __all_file_name
+from fileModule import push_file_label_by_name, __all_file_name, search_file_by_label_type, delete_file
 from labelEntity import Label
 from modules.db import MyDb
 from entities.fileEntity import File
 from utils import assemble
+from utils import path
+from utils.exchange import prefix
 
 bp = Blueprint('file', __name__, url_prefix='/file')
 bp.config = {'UPLOAD_FOLDER': 'upload/'}
@@ -28,6 +30,7 @@ def insert_file():
         file.save(os.path.join(bp.config['UPLOAD_FOLDER'], secure_filename(url)))
     labelk = form['labelk']
     labelv = form['labelv']
+
     label = Label(k=labelk, v=[labelv])
     labels = [label]
     f = File(_id, name, url, labels)
@@ -38,6 +41,29 @@ def insert_file():
         db.add_file(f)
     except DuplicateKeyError as e:
         return jsonify({'msg': 'error', 'result': 'id已存在'})
+    return jsonify({'msg': 'success', 'filename': url})
+
+
+@bp.route('/insert1', methods=['POST'])
+def insert_super():
+    form = request.form
+    _id = ''
+    name = form['name']
+    file = request.files['file']
+    url = ''
+    if file:
+        url = ''.join([str(int(time.time())), '.', file.filename.split('.')[1]])
+        file.save(os.path.join(bp.config['UPLOAD_FOLDER'], secure_filename(url)))
+
+    f = File(_id, name, url)
+    print(f.show1())
+    db = MyDb()
+    db.connect()
+    try:
+        db.add_file1(f)
+    except DuplicateKeyError as e:
+        db.add_file1(f)
+        print({'msg': 'error', 'result': 'id已存在'})
     return jsonify({'msg': 'success', 'filename': url})
 
 
@@ -65,11 +91,18 @@ def add_label(name):
     form = request.form
     labelk = form['labelk']
     labelv = form['labelv']
-    label = Label(k=labelk, v=[i for i in labelv.split(',')])
-    db = MyDb()
-    db.connect()
-    db.client.Knowledge.files.update({'name': name}, {'$push': {'labels': label.show()}})
-    return 'x'
+    push_file_label_by_name(name, labelk, labelv)
+    return {'msg': 'success'}
+
+
+@bp.route('/push_label', methods=['GET', 'POST'])
+def push_label():
+    form = request.form
+    name = form['name']
+    type_ = form['labelk']
+    value = form['labelv']
+    push_file_label_by_name(name, type_, value)
+    return {'msg', 'success'}
 
 
 @bp.route('/add_next_from_xmind', methods=['POST', 'GET'])
@@ -96,3 +129,21 @@ def add_next_from_xmind():
         if fp is not None:
             os.remove(fp)
     return {'msg': 'success', 'pairs': pairs}
+
+
+@bp.route('/get_path')
+def get_path_by_domain():
+    domain_type = request.args.get('type')
+    domain_value = request.args.get('value')
+    data = search_file_by_label_type(type_=domain_type, value=domain_value)
+    head = '数据分析思维'
+    path.get_path2(head, data, [])
+    x = path.all_path
+    path.all_path = []
+    return jsonify({'result': x, 'data': data})
+
+
+@bp.route('/delete/<string:name>')
+def delete(name):
+    delete_file(name)
+    return {'msg': 'success'}

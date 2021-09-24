@@ -37,5 +37,20 @@ class File:
         }
         return data
 
+    def show1(self):
+        """
+
+        :return: 能够存入mongodb的字典对象
+        """
+        if self._id == "":
+            self._id = prefix(6, random.randint(1, 99999), 'F')
+        data = {
+            "_id": self._id,
+            "name": self.name,
+            "url": self.url,
+            "labels": []
+        }
+        return data
+
     def add_label(self, label: Label):
         self.labels.append(label)
