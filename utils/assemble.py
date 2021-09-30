@@ -1,3 +1,5 @@
+import pandas
+
 from entities.labelEntity import Label
 import xmindparser  # xmind解析器
 import jsonpath
@@ -80,7 +82,7 @@ def parse_xmind_next(xmind_path: str):
 
     data = content[0]['topic']
     all_last = jsonpath.jsonpath(data, '$..topics[?(!@.topics)]')
-    all_last_name = [i['title'] for i in all_last]
+    all_last_name = [i['title'].strip() for i in all_last]
     pairs = exchange.w2(all_last_name)
     return pairs, all_last_name
 
@@ -109,5 +111,11 @@ if __name__ == '__main__':
     # print([i for i in collection.find()])
     # res = parse_xmind(x)
     # print(res)
-    x = parse_xmind_next('测试用例.xmind')
-    print(exchange.w2(x))
+    x = parse_xmind_next('Python&Business .xmind')
+    y = pandas.DataFrame(columns=['name','path','标签属性','标签值'])
+
+    print(y)
+    y['name'] = x[1]
+
+    print(y)
+    y.to_excel('hhhh.xlsx')

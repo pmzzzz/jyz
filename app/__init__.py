@@ -87,7 +87,7 @@ def insrt_xmind():
         f = request.files['file']
         fp = './temp/' + str(int(time.time())) + '.' + f.filename.split('.')[-1]
         f.save(fp)
-        res = assemble.parse_xmind(fp)
+
         myset = set()
         res = assemble.parse_xmind(fp)
         assemble.course_label(res, myset)  # xmind导入
@@ -96,7 +96,7 @@ def insrt_xmind():
         db.connect()
         course_collection = db.client.Knowledge.courseCollections
         id_ = prefix(6, random.randint(1, 99999), 'C')
-        course = {'_id': id_, 'course': res, 'label': labels}
+        course = {'_id': list(res.keys())[0], 'course': res, 'label': labels}
         if course_collection.find_one({'label': labels}) is None:
             course_collection.insert_one(course)  # xmind导入
         else:
@@ -106,4 +106,4 @@ def insrt_xmind():
     finally:
         if fp is not None:
             os.remove(fp)
-    return {'course': res, 'label': labels}
+    return {'msg':'success','course': res, 'label': labels}

@@ -83,7 +83,7 @@ def get_next(d):
     for i in d['labels']:
         if i['type'] == 'next':
             res = i['value']
-    print('nxdfss',res)
+    # print('nxdfss',res)
     return res
 
 

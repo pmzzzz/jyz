@@ -84,7 +84,7 @@ def push_file_label_by_name(name, type_, value):
     db = MyDb()
     db.connect()
     x = db.client.Knowledge.files.find_one({'$and': [{'name': name}, {'labels.type': type_}]})
-    print('scssds', x)
+    # print('scssds', x)
     if x:
         db.client.Knowledge.files.update_one({'$and': [{'name': name}, {'labels.type': type_}]},
                                              {'$push': {'labels.$.value': value}})
@@ -236,8 +236,8 @@ if __name__ == '__main__':
     # print(get_next('F059322'))
     # # print(get_file_by_id('F059322'))
     # print(__all_file_id())
-    for i in __all_file():
-        print(i)
+    # for i in __all_file():
+    #     print(i)
     # # # print(__all_file_name())
     # for i in search_file_by_label_type('能力', '通识知识与技能'):
     #     print(i)
@@ -254,3 +254,4 @@ if __name__ == '__main__':
     # print(x)
     for i in __all_file():
         print(i)
+

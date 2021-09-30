@@ -6,7 +6,8 @@ from flask import (
 from pymongo.errors import DuplicateKeyError
 from werkzeug.utils import secure_filename
 
-from fileModule import push_file_label_by_name, __all_file_name, search_file_by_label_type, delete_file
+from fileModule import push_file_label_by_name, __all_file_name, search_file_by_label_type, delete_file, \
+    push_file_labels_by_name, __all_file
 from labelEntity import Label
 from modules.db import MyDb
 from entities.fileEntity import File
@@ -22,7 +23,7 @@ bp.config = {'UPLOAD_FOLDER': 'upload/'}
 def insert_file():
     form = request.form
     _id = ''
-    name = form['name']
+    name = form['name'].strip()
     file = request.files['file']
     url = ''
     if file:
@@ -48,13 +49,8 @@ def insert_file():
 def insert_super():
     form = request.form
     _id = ''
-    name = form['name']
-    file = request.files['file']
+    name = form['name'].strip()
     url = ''
-    if file:
-        url = ''.join([str(int(time.time())), '.', file.filename.split('.')[1]])
-        file.save(os.path.join(bp.config['UPLOAD_FOLDER'], secure_filename(url)))
-
     f = File(_id, name, url)
     print(f.show1())
     db = MyDb()
@@ -91,7 +87,7 @@ def add_label(name):
     form = request.form
     labelk = form['labelk']
     labelv = form['labelv']
-    push_file_label_by_name(name, labelk, labelv)
+    push_file_labels_by_name(name, labelk, labelv)
     return {'msg': 'success'}
 
 
@@ -136,14 +132,38 @@ def get_path_by_domain():
     domain_type = request.args.get('type')
     domain_value = request.args.get('value')
     data = search_file_by_label_type(type_=domain_type, value=domain_value)
-    head = '数据分析思维'
+    head = 'python是什么'
     path.get_path2(head, data, [])
     x = path.all_path
     path.all_path = []
-    return jsonify({'result': x, 'data': data})
+    return jsonify({'total':len(x),'result': x, 'data': data})
 
 
 @bp.route('/delete/<string:name>')
 def delete(name):
     delete_file(name)
     return {'msg': 'success'}
+
+
+@bp.route('/all_path')
+def get_all_path():
+    data = __all_file()
+    names = __all_file_name()
+    max_path_length = 0
+    res = []
+    for i in names:
+        print(i)
+        path.get_path2(i, data, [])
+        all_path = path.all_path
+        path.all_path = []
+        a_path_max_length = max(list(map(lambda x: len(x), all_path)))
+        print(i, a_path_max_length)
+        if a_path_max_length > max_path_length:
+            max_path_length = a_path_max_length
+            res = all_path
+        result = [[j['name'] for j in i] for i in res]
+    return jsonify({'total': len(result), 'result': result})
+
+
+if __name__ == '__main__':
+    pass

@@ -2,7 +2,8 @@ from utils import exchange
 
 import requests
 
-FILE_PATH = '工作簿1.xlsx'
+FILE_PATH = '/Users/pmzz/dev/codingworks/3+1标签demo.xlsx'
+# FILE_PATH = './utils/hhhh.xlsx'
 
 labels = exchange.parse_xlsx_get_label(FILE_PATH)
 
@@ -15,13 +16,14 @@ def insert_file(name, path):
     url = "http://127.0.0.1:5000/file/insert1"
 
     payload = {'name': name}
-    files = [
-        ('file', ('{}'.format(path.split('/')[-1]), open(path, 'rb'), 'application/octet-stream'))
-    ]
     headers = {}
-
-    response = requests.request("POST", url, headers=headers, data=payload, files=files)
-
+    try:
+        files = [
+            ('file', ('{}'.format(path.split('/')[-1]), open(path, 'rb'), 'application/octet-stream'))
+        ]
+        response = requests.request("POST", url, headers=headers, data=payload, files=files)
+    except:
+        response = requests.request("POST", url, headers=headers, data=payload,)
     print(response.text)
 
 
@@ -57,5 +59,5 @@ def insert_labels():
 insert_files()
 insert_labels()
 #
-# if __name__ == '__main__':
-#     pass
+if __name__ == '__main__':
+    print(names_paths)

@@ -24,13 +24,13 @@ class File:
 
     def show(self):
         """
-
+        label是对象
         :return: 能够存入mongodb的字典对象
         """
         if self._id == "":
             self._id = prefix(6, random.randint(1, 99999), 'F')
         data = {
-            "_id": self._id,
+            "_id": self.name,
             "name": self.name,
             "url": self.url,
             "labels": [i.show() for i in self.labels]
@@ -39,13 +39,13 @@ class File:
 
     def show1(self):
         """
-
+        label为空
         :return: 能够存入mongodb的字典对象
         """
         if self._id == "":
             self._id = prefix(6, random.randint(1, 99999), 'F')
         data = {
-            "_id": self._id,
+            "_id": self.name,
             "name": self.name,
             "url": self.url,
             "labels": []

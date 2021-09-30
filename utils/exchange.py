@@ -64,10 +64,11 @@ def parse_xlsx_get_label(fp):
 
 def parse_xlsx_get_name_path(fp):
     x = pd.read_excel(fp)
-    x = x.dropna()
-    return x.iloc[:, :2]
+    x = x.dropna(subset=['name'])
+    return x.iloc[:,:2]
+
 
 if __name__ == '__main__':
-    x = parse_xlsx_get_label('/Users/pmzz/Jiangke/python/mongoKnowledge/工作簿1.xlsx')
-    y = parse_xlsx_get_name_path('/Users/pmzz/Jiangke/python/mongoKnowledge/工作簿1.xlsx')
-    print(x)
+    x = parse_xlsx_get_label('/Users/pmzz/dev/codingworks/3+1标签demo.xlsx')
+    y = parse_xlsx_get_name_path('/Users/pmzz/dev/codingworks/3+1标签demo.xlsx')
+    print(y)
